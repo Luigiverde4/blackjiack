@@ -1,13 +1,4 @@
-# Ignorar todo el contenido de las carpetas
-poker/train/*
-poker/valid/*
-poker/test/*
 poker/*
-# Pero permitir mantener la carpeta con un marcador vacío
-!poker/train/.gitkeep
-!poker/valid/.gitkeep
-!poker/test/.gitkeep
-
-# Los .h5
+!poker/* .gitkeep
 *.h5
 
