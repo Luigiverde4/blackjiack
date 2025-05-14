@@ -1,0 +1,13 @@
+# Ignorar todo el contenido de las carpetas
+train/*
+valid/*
+test/*
+
+# Pero permitir mantener la carpeta con un marcador vacío
+!train/.gitkeep
+!valid/.gitkeep
+!test/.gitkeep
+
+# Los .h5
+*.h5
+
