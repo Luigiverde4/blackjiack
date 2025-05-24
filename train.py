@@ -26,19 +26,5 @@ def main():
         imgsz=640,
         device=device
     )
-
-def main2():
-    # Cargar el modelo entrenado
-    model = YOLO("runs/detect/train18/weights/best.pt")
-
-    # Ejecutar detección en tiempo real desde webcam (source=0)
-    model.predict(
-        source=0,        # 0 = webcam por defecto
-        show=True,       # Muestra la ventana con detecciones
-        conf=0.3,        # Umbral de confianza
-        save=False       # No guardar salida a archivo
-    )
-
-
 if __name__ == "__main__":
     main()
