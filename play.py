@@ -23,23 +23,54 @@ def draw_zones(frame, alpha=0.3):
     cv2.putText(frame, "DEALER", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_DEALER, 2)
     cv2.putText(frame, "JUGADOR", (width - 150, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_JUGADOR, 2)
 
+def recorta16_9(frame):
+    """
+    Recorta el frame centrado a proporcion 16:9.
+
+    frame (np.ndarray): imagen de entrada (H x W x C)
+    """
+    # obtener dimensiones actuales del frame
+    height, width = frame.shape[:2]
+
+    # calcular altura objetivo manteniendo ancho original
+    target_width = width
+    target_height = int(width * 9 / 16)
+
+    # si no cabe, recalcular usando la altura como base
+    if target_height > height:
+        target_height = height
+        target_width = int(height * 16 / 9)
+
+    # calcular coordenadas de inicio para recorte centrado
+    y_start = (height - target_height) // 2
+    x_start = (width - target_width) // 2
+
+    # devolver recorte centrado
+    return frame[y_start:y_start+target_height, x_start:x_start+target_width]
+
+
 def main():
     # cargar modelo entrenado
     model = YOLO("runs/detect/train18/weights/best.pt")
 
     # abrir webcam
     cap = cv2.VideoCapture(0)
+
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+
+
     if not cap.isOpened():
-        print("❌ No se pudo abrir la camara")
+        print("No se pudo abrir la camara")
         return
 
     while True:
         ret, frame = cap.read()
         if not ret:
             break
+        frame = recorta16_9(frame)  # Forzamos relación 16:9
 
         height, width = frame.shape[:2]
-
         # dibujar zonas (izq dealer, der jugador)
         draw_zones(frame)
 
