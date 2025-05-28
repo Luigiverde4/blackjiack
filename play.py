@@ -12,16 +12,16 @@ def draw_zones(frame, alpha=0.3):
     height, width = frame.shape[:2]
 
     # zona izquierda -> DEALER
-    cv2.rectangle(overlay, (0, 0), (width // 2, height), COLOR_DEALER, -1)
+    cv2.rectangle(overlay, (0, 0), (width, height//2), COLOR_DEALER, -1)
     # zona derecha -> JUGADOR
-    cv2.rectangle(overlay, (width // 2, 0), (width, height), COLOR_JUGADOR, -1)
+    cv2.rectangle(overlay, (0, height//2), (width, height), COLOR_JUGADOR, -1)
 
     # aplicar mezcla de transparencia
     cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
 
     # texto para marcar zonas
     cv2.putText(frame, "DEALER", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_DEALER, 2)
-    cv2.putText(frame, "JUGADOR", (width - 150, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_JUGADOR, 2)
+    cv2.putText(frame, "JUGADOR", (10, height//2 + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_JUGADOR, 2)
 
 def recorta16_9(frame):
     """
@@ -51,7 +51,7 @@ def recorta16_9(frame):
 
 def main():
     # cargar modelo entrenado
-    model = YOLO("runs/detect/train18/weights/best.pt")
+    model = YOLO("runs\detect\cartas_peque\weights/best.pt")
 
     # abrir webcam
     cap = cv2.VideoCapture(0)

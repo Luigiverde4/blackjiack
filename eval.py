@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 
 def main():
-    model = YOLO("runs/detect/train18/weights/best.pt")
+    model = YOLO("runs/train/cartas_peque/weights/best.pt")
     metrics = model.val(data="cards.yaml")
 
     print("\n📊 Mostrando metricas del modelo sobre el conjunto de validacion:")

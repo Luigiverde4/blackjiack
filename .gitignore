@@ -1,7 +1,23 @@
-poker/*
-!poker/* .gitkeep
-*.h5
-cards/images
+# Carpetas ignoradas
+runs/
+.ipynb_checkpoints/
+
+# Modelos
 *.pt
-runs/*
+*.h5
+
+# Datasets
+cards/*
+!cards/.gitkeep
+poker/*
+!poker/.gitkeep
+
+# Archivos temporales o personales
 *.cache
+*.log
+kaggle.json
+.DS_Store
+Thumbs.db
+
+# Notebooks temporales
+*_checkpoint.ipynb
