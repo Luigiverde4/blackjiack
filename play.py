@@ -209,6 +209,33 @@ def dibujar_cartas_en_esquina(frame, cartas, imagenes_cartas, side = "player", m
         # ajustar siguiente posición
         x -= w + margen
 
+
+def iou(box1, box2):
+    """Calcula el IoU entre dos cajas (x1, y1, x2, y2)"""
+    xi1 = max(box1[0], box2[0])
+    yi1 = max(box1[1], box2[1])
+    xi2 = min(box1[2], box2[2])
+    yi2 = min(box1[3], box2[3])
+    inter_area = max(0, xi2 - xi1) * max(0, yi2 - yi1)
+
+    box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
+    box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
+    union_area = box1_area + box2_area - inter_area
+
+    return inter_area / union_area if union_area > 0 else 0
+
+def eliminar_detecciones_duplicadas(detections, umbral_iou=0.5):
+    """Filtra detecciones solapadas (misma carta física)"""
+    final = []
+    for det in detections:
+        name, x1, y1, x2, y2 = det
+        box = (x1, y1, x2, y2)
+        if not any(iou(box, (d[1], d[2], d[3], d[4])) > umbral_iou for d in final):
+            final.append(det)
+    return final
+
+
+
 def main():
     """
     Función principal que ejecuta el flujo de detección en tiempo real:
@@ -221,7 +248,7 @@ def main():
     
     cards_dict = cargar_imagenes_cartas("Minicartas", (40, 60))  # Cargamos las imagenes de icono | CHRISTIAN
     
-    model = YOLO("best33.pt")  # cargar modelo entrenado
+    model = YOLO("runs/detect/train33/weights/best.pt")  # cargar modelo entrenado
 
     # Configurar captura de vídeo
     cap = cv2.VideoCapture(0)
@@ -250,6 +277,10 @@ def main():
         player_dets = detect_in_zone(model, frame, 0, h//2, w, h//2, conf=0.3)
 
         
+        dealer_dets = eliminar_detecciones_duplicadas(dealer_dets)
+        player_dets = eliminar_detecciones_duplicadas(player_dets)
+
+
         # Dibujar resultados en la imagen
         
         # Resultados DEALER
