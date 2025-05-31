@@ -1,11 +1,39 @@
 from ultralytics import YOLO
 import cv2
+import os
 
 # === COLORES PARA VISUALIZACIÓN ===
 COLOR_DEALER  = (255, 0, 0)   # azul: zona del dealer
 COLOR_JUGADOR = (0, 0, 255)   # rojo: zona del jugador
 COLOR_CAJA    = (0, 255, 0)   # verde: bounding box de la carta detectada
 
+# CHRISTIAN
+def cargar_imagenes_cartas(ruta="Minicartas", tamaño=(80, 120)):
+    """
+    Carga las imagenes que se muestran como iconos al detectar una carta
+    Cargarlas ahora ahorra espacio y tiempo luego
+
+    Parámetros:
+        - ruta: carpeta a leer
+        - tamaño: tamaño de la imagen
+
+    Devuele:
+        imagenes: Diccionario con las imagenes atribuidas a cada clase
+    """
+    
+    imagenes = {}
+    # Pasa por la carpeta indicada para leer todas las imagenes de las cartas
+    for archivo in os.listdir(ruta):
+        nombre = os.path.splitext(archivo)[0]
+        path = os.path.join(ruta, archivo)
+        imagen = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+        # Nombre el mismo que la clase (Y la carta), path la ruta a esta para que lo lea cv2
+        
+        if imagen is not None:
+            imagen = cv2.resize(imagen, tamaño) #Cambia el tamaño de la imagen
+            imagenes[nombre] = imagen
+            # Lo guarda en un diccionario con el estilo de {"Ace of Clubs": imagen, "Ace of Hearts": imagen, ...}
+    return imagenes
 
 def draw_zones(frame, alpha=0.2):
     """
@@ -145,6 +173,42 @@ def debug_find_card_roi(zone):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+def dibujar_cartas_en_esquina(frame, cartas, imagenes_cartas, side = "player", margen=10):
+    """
+    Dibuja miniaturas de cartas detectadas en la esquina inferior.
+
+    lado: "izq" para dealer, "der" para jugador
+    """
+    
+    h_frame, w_frame = frame.shape[:2]
+    x = w_frame - margen
+    y = margen if side == "dealer" else h_frame - margen
+
+    for nombre_carta in cartas:
+        img_carta = imagenes_cartas.get(nombre_carta)
+        if img_carta is None:
+            continue  # saltar si no se encuentra imagen
+
+        h, w = img_carta.shape[:2]
+
+        # calcular posicion destino
+        x_offset = x - w
+        y_offset = y if side == "dealer" else y - h
+
+        # agregar imagen
+        if img_carta.shape[2] == 4:  # si tiene canal alfa
+            alpha = img_carta[:, :, 3] / 255.0
+            for c in range(3):
+                frame[y_offset:y_offset+h, x_offset:x_offset+w, c] = (
+                    alpha * img_carta[:, :, c] +
+                    (1 - alpha) * frame[y_offset:y_offset+h, x_offset:x_offset+w, c]
+                )
+        else:
+            frame[y_offset:y_offset+h, x_offset:x_offset+w] = img_carta
+
+        # ajustar siguiente posición
+        x -= w + margen
+
 def main():
     """
     Función principal que ejecuta el flujo de detección en tiempo real:
@@ -154,7 +218,10 @@ def main():
     - Detecta cartas en ambas zonas
     - Muestra resultados en pantalla
     """
-    model = YOLO("runs/detect/train33/weights/best.pt")  # cargar modelo entrenado
+    
+    cards_dict = cargar_imagenes_cartas("Minicartas", (40, 60))  # Cargamos las imagenes de icono | CHRISTIAN
+    
+    model = YOLO("best33.pt")  # cargar modelo entrenado
 
     # Configurar captura de vídeo
     cap = cv2.VideoCapture(0)
@@ -205,6 +272,10 @@ def main():
                     (10, h-50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_DEALER, 2)
         cv2.putText(frame, "Jugador: " + ", ".join(player_cards),
                     (10, h-20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_JUGADOR, 2)
+
+        # mostrar miniaturas en esquinas
+        dibujar_cartas_en_esquina(frame, dealer_cards, cards_dict, side = "dealer")
+        dibujar_cartas_en_esquina(frame, player_cards, cards_dict, side = "player")
 
         # Mostrar ventana
         cv2.imshow("Deteccion de cartas", frame)
