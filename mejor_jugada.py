@@ -1,4 +1,5 @@
 # Diccionario con las jugagas recomendadas para cada posible combinación de cartas del jugador con la carta del dealer
+import numpy as np
 estrategia = {
     'dura': {
         5:  dict.fromkeys(range(2, 12), 'P'),
@@ -19,115 +20,101 @@ estrategia = {
         20: dict.fromkeys(range(2, 12), 'Q')
     },
     'blanda': {
-        (1, 2): dict.fromkeys(range(2, 12), 'P'),
-        (1, 3): dict.fromkeys(range(2, 12), 'P'),
-        (1, 4): {2: 'P', 3: 'P', 4: 'D', 5: 'D', 6: 'D', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
-        (1, 5): {2: 'P', 3: 'P', 4: 'D', 5: 'D', 6: 'D', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
-        (1, 6): {2: 'P', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
-        (1, 7): {2: 'Q', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'Q', 8: 'Q', 9: 'P', 10: 'P', 11: 'P'},
-        (1, 8): dict.fromkeys(range(2, 12), 'Q'),
-        (1, 9): dict.fromkeys(range(2, 12), 'Q'),
-        (1, 10): dict.fromkeys(range(2, 12), 'Q')
-    },
-    'pares': {
-        (2, 2): {2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
-        (3, 3): {2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
-        (4, 4): {2: 'P', 3: 'P', 4: 'P', 5: 'S', 6: 'S', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
-        (5, 5): {2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'P', 11: 'P'},
-        (6, 6): {2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
-        (7, 7): dict.fromkeys(range(2, 9), 'S') | {9: 'P', 10: 'P', 11: 'P'},
-        (8, 8): {2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'S', 8: 'S', 9: 'S', 10: 'S', 11: 'S'},
-        (9, 9): {2: 'S', 3: 'S', 4: 'S', 5: 'S', 6: 'S', 7: 'Q', 8: 'S', 9: 'S', 10: 'Q', 11: 'Q'},
-        (10, 10): dict.fromkeys(range(2, 12), 'Q'),
-        (1, 1): dict.fromkeys(range(2, 12), 'S')  # As,As
+        (11, 2): dict.fromkeys(range(2, 12), 'P'),
+        (11, 3): dict.fromkeys(range(2, 12), 'P'),
+        (11, 4): {2: 'P', 3: 'P', 4: 'D', 5: 'D', 6: 'D', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
+        (11, 5): {2: 'P', 3: 'P', 4: 'D', 5: 'D', 6: 'D', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
+        (11, 6): {2: 'P', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
+        (11, 7): {2: 'Q', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'Q', 8: 'Q', 9: 'P', 10: 'P', 11: 'P'},
+        (11, 8): dict.fromkeys(range(2, 12), 'Q'),
+        (11, 9): dict.fromkeys(range(2, 12), 'Q'),
+        (11, 10): dict.fromkeys(range(2, 12), 'Q')
     }
 }
 
-def es_blanda(c1, c2):
+def es_blanda(cartas):
     ''' Indica si la jugada es blanda.
     Entrada:
-        c1 (int): Carta 1 del jugador
-        c2 (int): Carta 2 del jugador
+        cartas_jugador (array de int): Array con todas las cartas del jugador o dealer
     Salida:
         1 (int): Es blanda
-        2 (int): No es blanda
+        0 (int): No es blanda
     '''
-    return 1 in (c1, c2) and (c1 + c2 <= 11)
+    for v in cartas:
+        num= v.split()[0]
+        return num == "Ace" and np.sum(valor_carta(cartas) <= 21)
+
+
+
 # En Blackjack, entendemos por jugada blanda aquella en la que el jugador tiene un as que equivale a un 11 y luego puede convertirse en un uno si sobrepasa el 21.
 
 
-def es_par(c1, c2):
-    ''' Indica si el jugador tiene dos cartas iguales.
+def valor_cartas(cartas):
+    ''' Indica el valor de cada carta en int. Tiene en cuenta si la jugada es blanda o no
     Entrada:
-        c1 (int): Carta 1 del jugador
-        c2 (int): Carta 2 del jugador
+        cartas (array de strings): Array con las cartas del jugador o dealer en strings (["four of spades","nine of clubs"])
     Salida:
-        1 (int): Son pares
-        2 (int): No lo son
+        cartas_int (array de int): Array con las cartas del jugador o dealer en entero ([4 , 9])
     '''
-    return c1 == c2
+    hay_as=False
+    es_blanda = False
+    dict_valores= {"one" : 1 ,"two": 2, "three": 3, "four" : 4, "five": 5, "six": 6, "seven" : 7, "eight" : 8, "nine" : 9, "ten" : 10}
+    cartas_int=[]
+    for v in cartas:
+        num= v.split()[0]
+        # Jugamos con: A = 11, J/Q/K = 10
+        if num in ['jack', 'queen', 'king']:
+            cartas_int.append(10)
+        elif num == 'ace' and not hay_as:
+            cartas_int.append(11)
+            hay_as = True
+        elif num == "ace" and hay_as:
+            cartas_int.append(1)
 
+        else:
+            cartas_int.append(dict_valores.get(num))
 
-def tipo_mano(c1, c2):
-    ''' Indica el tipo de mano según las cartas del juagador.
-    Entrada:
-        c1 (int): Carta 1 del jugador
-        c2 (int): Carta 2 del jugador
-    Salida:
-        pares (string): El jugador tiene pares
-        blanda (string): El jugador tiene jugada blanda
-        dura (string): El jugador tiene jugada dura
-    '''
-    if es_par(c1, c2):
-        return 'pares'
-    elif es_blanda(c1, c2):
-        return 'blanda'
+        if np.sum(cartas_int) <= 21:
+            es_blanda = True
+        else:
+            es_blanda = False
+    if es_blanda:
+        return cartas_int, es_blanda
     else:
-        return 'dura'
+        if 11 in cartas_int:
+            ind_as = cartas_int.index(11)
+            cartas_int[ind_as] = 1
+        return cartas_int, es_blanda
 
-def valor_carta(carta):
-    ''' Indica el valor de cada carta en int.
-    Entrada:
-        carta (string): Carta
-    Salida:
-        10 (int): Si la carta es J,Q,K
-        11 (int): Si la carta es A
-        carta (int): Si la carta es 1-9
-    '''
-    # Jugamos con: A = 11, J/Q/K = 10
-    if carta in ['J', 'Q', 'K']:
-        return 10
-    elif carta == 'A':
-        return 11
-    else:
-        return int(carta)
 
-def mejor_jugada(carta1, carta2, carta_dealer):
+def mejor_jugada(cartas_jugador, carta_dealer):
     ''' Indica la mejor jugada posible dadas las cartas del jugador y la del dealer.
     Entrada:
-        carta1 (string): Carta 1 del jugador
-        carta2 (string): Carta 2 del jugador
-        carta_dealer (string): Carta del dealer
+        cartas_jugador (array de strings): Array con todas las cartas del jugador
+        carta_dealer (int): Carta del dealer
     Salida:
         P (string): Pedir
         Q (string): Quedarse
-        S (string): Separar
+        D (string): Pedir y doblar apuesta
+        F (string): Se acabó el juego (el jugador tiene +21)
     '''
-    v1 = valor_carta(carta1)
-    v2 = valor_carta(carta2)
-    v_d = valor_carta(carta_dealer)
 
-    tipo = tipo_mano(v1, v2)
+    clave = 0
+    cartas_int_jugador, es_blanda= valor_cartas(cartas_jugador)
 
-    if tipo == 'pares':
-        clave = (v1, v2)
-    elif tipo == 'blanda':
-        clave = (min(v1, v2), max(v1, v2))
+    carta_int_dealer,es_blanda_dealer = valor_cartas(carta_dealer)
+    print(es_blanda)
+    if es_blanda:
+        tipo = "blanda"
+        clave = (11, np.sum(cartas_int_jugador)-11)
     else:
-        clave = v1 + v2
+        tipo = "dura"
+        clave = np.sum(cartas_int_jugador)
 
-    jugada = estrategia.get(tipo, {}).get(clave, {}).get(v_d, 'P')
+    print(carta_int_dealer[0])
+    print(clave)
+    jugada = estrategia.get(tipo, {}).get(clave, {}).get(carta_int_dealer[0], 'P')
     return jugada
 
 # Ejemplo
-print(mejor_jugada('A', '9', '6')) 
+print(mejor_jugada(["ace of spades","nine of diamonds"],["king of spades"])) 

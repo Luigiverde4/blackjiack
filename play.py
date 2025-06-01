@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import cv2
 import os
+from mejor_jugada import *
 
 # === COLORES PARA VISUALIZACIÓN ===
 COLOR_DEALER  = (255, 0, 0)   # azul: zona del dealer
@@ -298,6 +299,18 @@ def main():
         # Mostrar nombres de cartas detectadas 
         dealer_cards = [d[0] for d in dealer_dets]
         player_cards = [d[0] for d in player_dets]
+
+        print(player_cards)
+        if len(player_cards) >= 2 and len(dealer_cards) >=1:
+            num_jugador_1 = player_cards[0].split()[0] 
+            num_jugador_2 = player_cards[1].split()[0]
+            num_dealer = dealer_cards[0].split()[0]
+
+            print(num_jugador_1)
+            print(num_jugador_2)
+            print(num_dealer) 
+
+            mejor_jugada(num_jugador_1,num_jugador_2,num_dealer)
 
         cv2.putText(frame, "Dealer: " + ", ".join(dealer_cards),
                     (10, h-50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_DEALER, 2)
