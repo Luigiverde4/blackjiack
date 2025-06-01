@@ -32,19 +32,6 @@ estrategia = {
     }
 }
 
-def es_blanda(cartas):
-    ''' Indica si la jugada es blanda.
-    Entrada:
-        cartas_jugador (array de int): Array con todas las cartas del jugador o dealer
-    Salida:
-        1 (int): Es blanda
-        0 (int): No es blanda
-    '''
-    for v in cartas:
-        num= v.split()[0]
-        return num == "Ace" and np.sum(valor_carta(cartas) <= 21)
-
-
 
 # En Blackjack, entendemos por jugada blanda aquella en la que el jugador tiene un as que equivale a un 11 y luego puede convertirse en un uno si sobrepasa el 21.
 
