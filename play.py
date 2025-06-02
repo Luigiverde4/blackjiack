@@ -235,7 +235,38 @@ def eliminar_detecciones_duplicadas(detections, umbral_iou=0.5):
             final.append(det)
     return final
 
+def interfaz(player_cards,dealer_card,cards_dict,frame,w,h,val):
+    print(val)
+    cv2.putText(frame, "Dealer: " + ", ".join(dealer_card),
+                    (10, h-50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_DEALER, 2)
+    cv2.putText(frame, "Jugador: " + ", ".join(player_cards),
+                (10, h-20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_JUGADOR, 2)
+    cv2.putText(frame, "Introduce tu apuesta:{0}".format(val) , 
+                    ((w//2) + 300 , (h//2)-300), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+    
+    if len(player_cards) >= 2 and len(dealer_card) >=1:
+        jugada = mejor_jugada(player_cards,dealer_card)
+        if jugada == "Q":
+            cv2.putText(frame, "Quedarse" , 
+                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+        elif jugada == "P":
+            cv2.putText(frame, "Pedir" , 
+                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+        elif jugada == "D":
+            cv2.putText(frame, "Pedir y doblar apuesta" , 
+                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+        else:
+            cv2.putText(frame, "Has perdido" , 
+                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+    else:
+        cv2.putText(frame, "Esperando a que se pongan cartas" , 
+                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+    # mostrar miniaturas en esquinas
+    dibujar_cartas_en_esquina(frame, dealer_card, cards_dict, side = "dealer")
+    dibujar_cartas_en_esquina(frame, player_cards, cards_dict, side = "player")
 
+    # Mostrar ventana
+    cv2.imshow("Deteccion de cartas", frame)
 
 def main():
     """
@@ -246,10 +277,9 @@ def main():
     - Detecta cartas en ambas zonas
     - Muestra resultados en pantalla
     """
-    
     cards_dict = cargar_imagenes_cartas("Minicartas", (40, 60))  # Cargamos las imagenes de icono | CHRISTIAN
-    
     model = YOLO("runs/detect/train33/weights/best.pt")  # cargar modelo entrenado
+    val = ""
 
     # Configurar captura de vídeo
     cap = cv2.VideoCapture(0)
@@ -300,37 +330,19 @@ def main():
         dealer_cards = [d[0] for d in dealer_dets]
         player_cards = [d[0] for d in player_dets]
 
-        print(player_cards)
-        if len(player_cards) >= 2 and len(dealer_cards) >=1:
-            num_jugador_1 = player_cards[0].split()[0] 
-            num_jugador_2 = player_cards[1].split()[0]
-            num_dealer = dealer_cards[0].split()[0]
 
-            print(num_jugador_1)
-            print(num_jugador_2)
-            print(num_dealer) 
-
-            mejor_jugada(num_jugador_1,num_jugador_2,num_dealer)
-
-        cv2.putText(frame, "Dealer: " + ", ".join(dealer_cards),
-                    (10, h-50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_DEALER, 2)
-        cv2.putText(frame, "Jugador: " + ", ".join(player_cards),
-                    (10, h-20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_JUGADOR, 2)
-
-        # mostrar miniaturas en esquinas
-        dibujar_cartas_en_esquina(frame, dealer_cards, cards_dict, side = "dealer")
-        dibujar_cartas_en_esquina(frame, player_cards, cards_dict, side = "player")
-
-        # Mostrar ventana
-        cv2.imshow("Deteccion de cartas", frame)
         key = cv2.waitKey(1) & 0xFF 
         
         if key == ord('q'):
             break
         elif key == ord('d'):
             debug_find_card_roi(frame_clean[0:h//2, 0:w])     # dealer (mitad de arriba)
-            debug_find_card_roi(frame_clean[h//2:h, 0:w])     # jugador (mitad de abajo)
+            debug_find_card_roi(frame_clean[h//2:h, 0:w])
+        elif key != ord("q") and chr(key).isdigit(): # jugador (mitad de abajo)
+            val+=chr(key)
+            print(val)
 
+        interfaz(player_cards,dealer_cards,cards_dict,frame,w,h,val)
     # Liberar recursos
     cap.release()
     cv2.destroyAllWindows()

@@ -97,11 +97,10 @@ def mejor_jugada(cartas_jugador, carta_dealer):
     else:
         tipo = "dura"
         clave = np.sum(cartas_int_jugador)
-
-    print(carta_int_dealer[0])
-    print(clave)
     jugada = estrategia.get(tipo, {}).get(clave, {}).get(carta_int_dealer[0], 'P')
+    if np.sum(cartas_int_jugador)>21:
+        jugada = "F"
     return jugada
 
 # Ejemplo
-print(mejor_jugada(["ace of spades","nine of diamonds"],["king of spades"])) 
+#print(mejor_jugada(["ace of spades","nine of diamonds"],["king of spades"])) 
