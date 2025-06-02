@@ -236,31 +236,39 @@ def eliminar_detecciones_duplicadas(detections, umbral_iou=0.5):
     return final
 
 def interfaz(player_cards,dealer_card,cards_dict,frame,w,h,val):
-    print(val)
+    
     cv2.putText(frame, "Dealer: " + ", ".join(dealer_card),
                     (10, h-50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_DEALER, 2)
     cv2.putText(frame, "Jugador: " + ", ".join(player_cards),
                 (10, h-20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_JUGADOR, 2)
     cv2.putText(frame, "Introduce tu apuesta:{0}".format(val) , 
-                    ((w//2) + 300 , (h//2)-300), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+                    ((w//2)-100 , (h//2)-325), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
     
     if len(player_cards) >= 2 and len(dealer_card) >=1:
-        jugada = mejor_jugada(player_cards,dealer_card)
+        jugada, num_jugador, num_dealer = mejor_jugada(player_cards,dealer_card)
+
+        cv2.putText(frame, str(np.sum(num_jugador)) , 
+            ((w//2) , (h//2)+50), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_JUGADOR, 2)
+        
+        cv2.putText(frame, str(np.sum(num_dealer)) , 
+            ((w//2) , (h//2)-50), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_DEALER, 2)
+
         if jugada == "Q":
             cv2.putText(frame, "Quedarse" , 
-                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+                    ((w//2) , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
         elif jugada == "P":
             cv2.putText(frame, "Pedir" , 
-                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+                    ((w//2) , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
         elif jugada == "D":
             cv2.putText(frame, "Pedir y doblar apuesta" , 
-                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+                    ((w//2), h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
         else:
             cv2.putText(frame, "Has perdido" , 
-                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+                    ((w//2) , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+            val = ""
     else:
         cv2.putText(frame, "Esperando a que se pongan cartas" , 
-                    ((w//2)-250 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
+                    ((w//2)-200 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
     # mostrar miniaturas en esquinas
     dibujar_cartas_en_esquina(frame, dealer_card, cards_dict, side = "dealer")
     dibujar_cartas_en_esquina(frame, player_cards, cards_dict, side = "player")
@@ -338,9 +346,8 @@ def main():
         elif key == ord('d'):
             debug_find_card_roi(frame_clean[0:h//2, 0:w])     # dealer (mitad de arriba)
             debug_find_card_roi(frame_clean[h//2:h, 0:w])
-        elif key != ord("q") and chr(key).isdigit(): # jugador (mitad de abajo)
+        elif key != ord("f") and chr(key).isdigit(): # jugador (mitad de abajo)
             val+=chr(key)
-            print(val)
 
         interfaz(player_cards,dealer_cards,cards_dict,frame,w,h,val)
     # Liberar recursos

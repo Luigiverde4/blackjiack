@@ -8,7 +8,7 @@ estrategia = {
         8:  dict.fromkeys(range(2, 12), 'P'),
         9:  {2: 'P', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
         10: {2: 'D', 3: 'D', 4: 'D', 5: 'D', 6: 'D', 7: 'D', 8: 'D', 9: 'D', 10: 'P', 11: 'P'},
-        11: dict.fromkeys(range(2, 11), 'D') | {11: 'D*'},
+        11: dict.fromkeys(range(2, 11), 'D') | {11: 'D'},
         12: {2: 'P', 3: 'P', 4: 'Q', 5: 'Q', 6: 'Q', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
         13: {2: 'Q', 3: 'Q', 4: 'Q', 5: 'Q', 6: 'Q', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
         14: {2: 'Q', 3: 'Q', 4: 'Q', 5: 'Q', 6: 'Q', 7: 'P', 8: 'P', 9: 'P', 10: 'P', 11: 'P'},
@@ -61,7 +61,7 @@ def valor_cartas(cartas):
         else:
             cartas_int.append(dict_valores.get(num))
 
-        if np.sum(cartas_int) <= 21:
+        if (np.sum(cartas_int) <= 21) and (11 in cartas_int):
             es_blanda = True
         else:
             es_blanda = False
@@ -90,17 +90,17 @@ def mejor_jugada(cartas_jugador, carta_dealer):
     cartas_int_jugador, es_blanda= valor_cartas(cartas_jugador)
 
     carta_int_dealer,es_blanda_dealer = valor_cartas(carta_dealer)
-    print(es_blanda)
     if es_blanda:
         tipo = "blanda"
         clave = (11, np.sum(cartas_int_jugador)-11)
     else:
         tipo = "dura"
         clave = np.sum(cartas_int_jugador)
+    print(clave)
     jugada = estrategia.get(tipo, {}).get(clave, {}).get(carta_int_dealer[0], 'P')
     if np.sum(cartas_int_jugador)>21:
         jugada = "F"
-    return jugada
+    return jugada, np.sum(cartas_int_jugador), np.sum(carta_int_dealer)
 
 # Ejemplo
-#print(mejor_jugada(["ace of spades","nine of diamonds"],["king of spades"])) 
+print(mejor_jugada(["seven of hearts","four of hearts"],["four of spades"])) 
