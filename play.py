@@ -176,19 +176,18 @@ def debug_find_card_roi(zone):
 
 def dibujar_cartas_en_esquina(frame, cartas, imagenes_cartas, side = "player", margen=10):
     """
-    Dibuja miniaturas de cartas detectadas en la esquina inferior.
-
-    lado: "izq" para dealer, "der" para jugador
+    Dibuja miniaturas de cartas detectadas en la esquina inferior si es del jugador y superior si es del dealer
     """
     
     h_frame, w_frame = frame.shape[:2]
     x = w_frame - margen
-    y = margen if side == "dealer" else h_frame - margen
+    y = margen if side == "dealer" else h_frame - margen # Colocamos la posición de las primeras cartas
+    # Como esta función se ejecuta 2 veces (Una por lado de la mesa), no hay problemas
 
     for nombre_carta in cartas:
         img_carta = imagenes_cartas.get(nombre_carta)
         if img_carta is None:
-            continue  # saltar si no se encuentra imagen
+            continue  # saltar si no se encuentra imagen sobre dicha carta, cosa que no debería de pasar
 
         h, w = img_carta.shape[:2]
 
@@ -200,10 +199,8 @@ def dibujar_cartas_en_esquina(frame, cartas, imagenes_cartas, side = "player", m
         if img_carta.shape[2] == 4:  # si tiene canal alfa
             alpha = img_carta[:, :, 3] / 255.0
             for c in range(3):
-                frame[y_offset:y_offset+h, x_offset:x_offset+w, c] = (
-                    alpha * img_carta[:, :, c] +
-                    (1 - alpha) * frame[y_offset:y_offset+h, x_offset:x_offset+w, c]
-                )
+                frame[y_offset:y_offset+h, x_offset:x_offset+w, c] = ( # Colocamos los valores de la imagen en el frame
+                alpha * img_carta[:, :, c] + (1 - alpha) * frame[y_offset:y_offset+h, x_offset:x_offset+w, c])
         else:
             frame[y_offset:y_offset+h, x_offset:x_offset+w] = img_carta
 
@@ -286,7 +283,7 @@ def main():
     - Muestra resultados en pantalla
     """
     cards_dict = cargar_imagenes_cartas("Minicartas", (40, 60))  # Cargamos las imagenes de icono | CHRISTIAN
-    model = YOLO("runs/detect/train33/weights/best.pt")  # cargar modelo entrenado
+    model = YOLO("best33.pt")  # cargar modelo entrenado
     val = ""
 
     # Configurar captura de vídeo
