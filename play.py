@@ -55,12 +55,7 @@ def draw_zones(frame, alpha=0.2):
 
     # Mezclar overlay con el frame original
     cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
-    
-    # Etiquetas de zona
-    cv2.putText(frame, "DEALER",  (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_DEALER, 2)
-    cv2.putText(frame, "JUGADOR", (10, h//2 + 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_JUGADOR, 2)
+
 
 def find_cards_roi(zone, max_cards=7):
     """
@@ -222,7 +217,7 @@ def iou(box1, box2):
 
     return inter_area / union_area if union_area > 0 else 0
 
-def eliminar_detecciones_duplicadas(detections, umbral_iou=0.5):
+def eliminar_detecciones_duplicadas(detections, umbral_iou=0.2):
     """Filtra detecciones solapadas (misma carta física)"""
     final = []
     for det in detections:
@@ -232,45 +227,71 @@ def eliminar_detecciones_duplicadas(detections, umbral_iou=0.5):
             final.append(det)
     return final
 
-def interfaz(player_cards,dealer_card,cards_dict,frame,w,h,val):
-    
-    cv2.putText(frame, "Dealer: " + ", ".join(dealer_card),
-                    (10, h-50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_DEALER, 2)
-    cv2.putText(frame, "Jugador: " + ", ".join(player_cards),
-                (10, h-20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_JUGADOR, 2)
-    cv2.putText(frame, "Introduce tu apuesta:{0}".format(val) , 
-                    ((w//2)-100 , (h//2)-325), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
-    
-    if len(player_cards) >= 2 and len(dealer_card) >=1:
-        jugada, num_jugador, num_dealer = mejor_jugada(player_cards,dealer_card)
+def interfaz(player_cards, dealer_card, cards_dict, frame, w, h, val):
+    """
+    Muestra la interfaz visual del juego en el frame:
+    - Cartas detectadas y puntuaciones
+    - Apuesta introducida
+    - Mejor jugada sugerida
+    - Miniaturas de cartas en pantalla
 
-        cv2.putText(frame, str(np.sum(num_jugador)) , 
-            ((w//2) , (h//2)+50), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_JUGADOR, 2)
-        
-        cv2.putText(frame, str(np.sum(num_dealer)) , 
-            ((w//2) , (h//2)-50), cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_DEALER, 2)
+    Parámetros:
+    - player_cards (list): Cartas del jugador
+    - dealer_card (list): Cartas del dealer
+    - cards_dict (dict): Diccionario con imágenes de cartas
+    - frame (ndarray): Imagen sobre la que se dibuja
+    - w (int): Ancho del frame
+    - h (int): Alto del frame
+    - val (str): Apuesta introducida
+    """
+    # Dibujar zonas
+    draw_zones(frame)
 
-        if jugada == "Q":
-            cv2.putText(frame, "Quedarse" , 
-                    ((w//2) , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
-        elif jugada == "P":
-            cv2.putText(frame, "Pedir" , 
-                    ((w//2) , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
-        elif jugada == "D":
-            cv2.putText(frame, "Pedir y doblar apuesta" , 
-                    ((w//2), h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
-        else:
-            cv2.putText(frame, "Has perdido" , 
-                    ((w//2) , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
-            val = ""
+    # Calcular puntuaciones si hay suficientes cartas (dealer 1+ cartas y jugador 2+ cartas)
+    if len(player_cards) >= 2 and len(dealer_card) >= 1:
+        jugada, num_jugador, num_dealer = mejor_jugada(player_cards, dealer_card)
+        texto_dealer = f"DEALER - {np.sum(num_dealer)}"
+        texto_jugador = f"JUGADOR - {np.sum(num_jugador)}"
     else:
-        cv2.putText(frame, "Esperando a que se pongan cartas" , 
-                    ((w//2)-200 , h//2), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
-    # mostrar miniaturas en esquinas
-    dibujar_cartas_en_esquina(frame, dealer_card, cards_dict, side = "dealer")
-    dibujar_cartas_en_esquina(frame, player_cards, cards_dict, side = "player")
+        jugada = None
+        texto_dealer = "DEALER"
+        texto_jugador = "JUGADOR"
 
-    # Mostrar ventana
+    # Etiquetas con puntuación
+    cv2.putText(frame, texto_dealer,  (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_DEALER, 2)
+    cv2.putText(frame, texto_jugador, (10, h//2 + 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, COLOR_JUGADOR, 2)
+
+    # Mostrar cartas actuales
+    cv2.putText(frame, "Dealer: " + ", ".join(dealer_card),
+                (10, h//2 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_DEALER, 2)
+    cv2.putText(frame, "Jugador: " + ", ".join(player_cards),
+                (10, h - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_JUGADOR, 2)
+
+    # Mostrar apuesta actual
+    cv2.putText(frame, f"Introduce tu apuesta: {val}",
+                (10, h//2 + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLOR_JUGADOR, 2)
+
+    # Mostrar jugada recomendada
+    if jugada:
+        mensaje = {
+            "Q": "Quedarse",
+            "P": "Pedir",
+            "D": "Pedir y doblar apuesta"
+        }.get(jugada, "Has perdido")
+
+        cv2.putText(frame, mensaje,
+                    (10, h//2 + 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLOR_JUGADOR, 2)
+    else:
+        cv2.putText(frame, "Esperando a que se pongan cartas",
+                    (10, h//2 + 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLOR_JUGADOR, 2)
+
+    # Miniaturas de cartas
+    dibujar_cartas_en_esquina(frame, dealer_card, cards_dict, side="dealer")
+    dibujar_cartas_en_esquina(frame, player_cards, cards_dict, side="player")
+
+    # Mostrar frame
     cv2.imshow("Deteccion de cartas", frame)
 
 def main():
@@ -283,7 +304,7 @@ def main():
     - Muestra resultados en pantalla
     """
     cards_dict = cargar_imagenes_cartas("Minicartas", (40, 60))  # Cargamos las imagenes de icono | CHRISTIAN
-    model = YOLO("best33.pt")  # cargar modelo entrenado
+    model = YOLO("./runs/detect/train33/weights/best.pt")  # cargar modelo entrenado
     val = ""
 
     # Configurar captura de vídeo
@@ -303,9 +324,6 @@ def main():
         # Datos
         h, w = frame.shape[:2]
         frame_clean = frame.copy() # Copia limpia del frame
-
-        # Dibujajmos sobre el frame que vamos a mostrar
-        draw_zones(frame)
 
         # Detecta cartas en la zona superior (dealer), de (0, 0) a (w, h//2), con confianza ≥ 0.3
         dealer_dets = detect_in_zone(model, frame, 0, 0, w, h//2, conf=0.3)
