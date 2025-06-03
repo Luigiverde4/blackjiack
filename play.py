@@ -268,11 +268,6 @@ def interfaz(player_cards, dealer_card, cards_dict, frame, w, h, val):
                 (10, h//2 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_DEALER, 2)
     cv2.putText(frame, "Jugador: " + ", ".join(player_cards),
                 (10, h - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_JUGADOR, 2)
-
-    # Mostrar apuesta actual
-    cv2.putText(frame, f"Introduce tu apuesta: {val}",
-                (10, h//2 + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLOR_JUGADOR, 2)
-
     # Mostrar jugada recomendada
     if jugada:
         mensaje = {
@@ -282,10 +277,10 @@ def interfaz(player_cards, dealer_card, cards_dict, frame, w, h, val):
         }.get(jugada, "Has perdido")
 
         cv2.putText(frame, mensaje,
-                    (10, h//2 + 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLOR_JUGADOR, 2)
+                    (10, h//2 + 60), cv2.FONT_HERSHEY_SIMPLEX, 1.0, COLOR_JUGADOR, 2)
     else:
         cv2.putText(frame, "Esperando a que se pongan cartas",
-                    (10, h//2 + 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLOR_JUGADOR, 2)
+                    (10, h//2 + 60), cv2.FONT_HERSHEY_SIMPLEX, 1.0, COLOR_JUGADOR, 2)
 
     # Miniaturas de cartas
     dibujar_cartas_en_esquina(frame, dealer_card, cards_dict, side="dealer")

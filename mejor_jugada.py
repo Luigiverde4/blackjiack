@@ -17,7 +17,8 @@ estrategia = {
         17: dict.fromkeys(range(2, 12), 'Q'),
         18: dict.fromkeys(range(2, 12), 'Q'),
         19: dict.fromkeys(range(2, 12), 'Q'),
-        20: dict.fromkeys(range(2, 12), 'Q')
+        20: dict.fromkeys(range(2, 12), 'Q'),
+        21: dict.fromkeys(range(2,12),'Q')
     },
     'blanda': {
         (11, 2): dict.fromkeys(range(2, 12), 'P'),
@@ -45,7 +46,11 @@ def valor_cartas(cartas):
     '''
     hay_as=False
     es_blanda = False
-    dict_valores= {"one" : 1 ,"two": 2, "three": 3, "four" : 4, "five": 5, "six": 6, "seven" : 7, "eight" : 8, "nine" : 9, "ten" : 10}
+    dict_valores= {"one" : 1 ,"two": 2, "three": 3,
+                    "four" : 4, "five": 5,
+                    "six": 6, "seven" : 7, 
+                    "eight" : 8, "nine" : 9, "ten" : 10,
+                    "joker": 0}
     cartas_int=[]
     for v in cartas:
         num= v.split()[0]
@@ -57,21 +62,19 @@ def valor_cartas(cartas):
             hay_as = True
         elif num == "ace" and hay_as:
             cartas_int.append(1)
-
+        elif num in dict_valores:
+            cartas_int.append(dict_valores[num])
         else:
-            cartas_int.append(dict_valores.get(num))
+            raise ValueError(f"Carta no reconocida: '{num}'")
 
-        if (np.sum(cartas_int) <= 21) and (11 in cartas_int):
-            es_blanda = True
-        else:
-            es_blanda = False
-    if es_blanda:
-        return cartas_int, es_blanda
-    else:
-        if 11 in cartas_int:
-            ind_as = cartas_int.index(11)
-            cartas_int[ind_as] = 1
-        return cartas_int, es_blanda
+    es_blanda = (np.sum(cartas_int) <= 21) and (11 in cartas_int)
+
+    if not es_blanda and 11 in cartas_int:
+        # Convertimos el as de 11 a 1 si ya no puede ser blanda
+        ind_as = cartas_int.index(11)
+        cartas_int[ind_as] = 1
+
+    return cartas_int, es_blanda
 
 
 def mejor_jugada(cartas_jugador, carta_dealer):
@@ -103,4 +106,4 @@ def mejor_jugada(cartas_jugador, carta_dealer):
     return jugada, np.sum(cartas_int_jugador), np.sum(carta_int_dealer)
 
 # Ejemplo
-print(mejor_jugada(["seven of hearts","four of hearts"],["four of spades"])) 
+# print(mejor_jugada(["seven of hearts","four of hearts"],["four of spades"])) 
