@@ -88,6 +88,7 @@ Valores:
 | `cards.yaml`             | Configuración del dataset: nombres de clases y rutas a los conjuntos de entrenamiento/validación. |
 | `kaggle.json`            | Credenciales necesarias para descargar el dataset desde Kaggle. |
 | `runs/`                  | Carpeta generada automáticamente por YOLO que contiene modelos entrenados y resultados de validación. |
+| `requirements.ipynb`                  | Notebook para descargar las librerias necesarias |
 
 
 ### 📚 Librerías necesarias (Python 3.8+)
